@@ -53,6 +53,7 @@ Portalkeeper (`sql/portalkeeper_addon.sql`).
 | --- | --- |
 | Friends list | Account friends in blue at the top, as `Pawster#1234 (Birta)`. The tooltip shows the character, level, race, class, zone and your note. |
 | Add Friend | Type `Name#1234` (plus an optional message) for an account friend, or a character name for a normal friend. |
+| Your tag | Beside the Friends, Ignore and Pending tabs. Click it to put it in chat, or to choose one if you have none. |
 | Pending tab | Requests you got: accept or decline. |
 | Right-click a friend | Whisper, invite, set note, remove. |
 | Broadcast box | A line all your account friends see (with a toast). |

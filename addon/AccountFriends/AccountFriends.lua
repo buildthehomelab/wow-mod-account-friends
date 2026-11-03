@@ -334,7 +334,7 @@ hooksecurefunc("AddFriendFrame_ShowEntry", function()
         return
     end
     AddFriendEntryFrameLeftTitle:SetText("Account Friend")
-    if store.self then
+    if store.self and store.self.pid then
         AddFriendEntryFrameLeftDescription:SetText("Their friend tag, like Name#1234")
     else
         AddFriendEntryFrameLeftDescription:SetText("Pick your own tag first:\n.friends tag <name>")
@@ -347,6 +347,53 @@ end)
 -- The stock pieces that only exist for Real ID, switched on with the first friend list.
 
 local interfaceReady = false
+local tagButton
+
+local function ownTag()
+    local s = store.self
+    return s and s.pid and (s.name .. "#" .. s.code)
+end
+
+local function updateTagButton()
+    if tagButton then
+        tagButton:SetText(ownTag() or "Pick a friend tag")
+        tagButton:SetWidth(tagButton:GetTextWidth() + 4)
+    end
+end
+
+-- Your own tag beside the Friends, Ignore and Pending tabs: click to put it in chat.
+local function createTagButton()
+    tagButton = CreateFrame("Button", "AccountFriendsTagButton", FriendsTabHeader)
+    tagButton:SetHeight(20)
+    tagButton:SetPoint("LEFT", FriendsTabHeaderTab3, "RIGHT", 4, 0)
+    tagButton:SetNormalFontObject(GameFontNormalSmall)
+    tagButton:SetHighlightFontObject(GameFontHighlightSmall)
+    tagButton:SetScript("OnShow", updateTagButton)
+    tagButton:SetScript("OnClick", function()
+        -- Not ChatEdit_InsertLink: with the macro window open it writes into the macro.
+        local text = ownTag() or ".friends tag "
+        local box = ChatEdit_GetActiveWindow()
+        if box then
+            box:Insert(text)
+        else
+            ChatFrame_OpenChat(text)
+        end
+    end)
+    tagButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+        if ownTag() then
+            GameTooltip:SetText("Your friend tag")
+            GameTooltip:AddLine("Click to put it in chat. Friends add you with it.", 1, 1, 1)
+        else
+            GameTooltip:SetText("No friend tag yet")
+            GameTooltip:AddLine("Click to choose one. Friends add you with it.", 1, 1, 1)
+        end
+        GameTooltip:Show()
+    end)
+    tagButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+end
 
 local function dropMenuEntries(menu, drop)
     if not menu then
@@ -380,6 +427,7 @@ local function enableInterface()
     -- FriendsFrame hid the pending requests tab at load, when Battle.net was still off.
     if FriendsTabHeaderTab3 then
         FriendsTabHeaderTab3:Show()
+        createTagButton()
     end
 
     -- Battle.net features the server doesn't have: conversations, friends of friends,
@@ -431,6 +479,7 @@ local function handle(events)
         local kind, a, b = e[1], e[2], e[3]
         if kind == "synced" then
             enableInterface()
+            updateTagButton()
             if a then
                 fire("BN_CONNECTED")
             end
@@ -441,6 +490,7 @@ local function handle(events)
                 fire("BN_FRIEND_INVITE_LIST_INITIALIZED", pending)
             end
         elseif kind == "self" then
+            updateTagButton()
             fire("BN_CUSTOM_MESSAGE_CHANGED")
         elseif kind == "info" then
             fire("BN_FRIEND_INFO_CHANGED")
