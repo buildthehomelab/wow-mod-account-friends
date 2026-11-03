@@ -1,0 +1,65 @@
+# Checks for this repo come from https://github.com/buildthehomelab/wow-ci.
+# They pick themselves based on what the repo contains (C++, SQL, Lua/.toc, PHP, shell, Python).
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: buildthehomelab/wow-ci/.github/workflows/ci.yml@main
+    permissions:
+      contents: read
+      packages: read
+
+  # Server text helpers, the addon's protocol and its Battle.net shim against stand-in client
+  # frames.
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Server text helpers
+        run: |
+          c++ -std=c++17 -Wall -Wextra -Werror -Isrc tests/text.cpp -o /tmp/text-test
+          /tmp/text-test
+      - name: Addon protocol and shim
+        run: |
+          lua5.1 tests/protocol.lua
+          lua5.1 tests/shim.lua
+
+  # The module's own statements (read from the C++) against a real MySQL.
+  sql-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: test
+        ports:
+          - 33062:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -ptest"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install PyMySQL==1.1.1
+      - name: Module SQL on MySQL 8.4
+        run: python tests/sql_smoke.py

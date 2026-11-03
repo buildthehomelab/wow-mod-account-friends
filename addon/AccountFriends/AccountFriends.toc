@@ -1,0 +1,7 @@
+## Interface: 30300
+## Title: Account Friends
+## Notes: Account-wide friends (mod-account-friends) in the Friends window's Real ID rows: online on any character, toasts, whispers.
+## Author: buildthehomelab
+## Version: 1.0.0
+Protocol.lua
+AccountFriends.lua

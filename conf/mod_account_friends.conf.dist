@@ -1,0 +1,45 @@
+[worldserver]
+
+########################################
+# mod-account-friends
+########################################
+#
+#    AccountFriends.Enable
+#        Description: Account friends (Real ID style): friend tags, requests, online status
+#                     across characters, whispers to the account and the .friends commands.
+#        Default:     1 - (On)
+#                     0 - (Off)
+
+AccountFriends.Enable = 1
+
+#
+#    AccountFriends.OfflineDelay
+#        Description: Seconds an account may sit at character select before its friends see
+#                     it go offline. Switching characters inside this time only shows the new
+#                     character.
+#        Default:     30
+
+AccountFriends.OfflineDelay = 30
+
+#
+#    AccountFriends.MaxFriends
+#        Description: Most account friends one account can have.
+#        Default:     100
+
+AccountFriends.MaxFriends = 100
+
+#
+#    AccountFriends.MaxSentRequests
+#        Description: Most unanswered friend requests one account can have out at a time.
+#        Default:     20
+
+AccountFriends.MaxSentRequests = 20
+
+#
+#    AccountFriends.TagHint
+#        Description: Once per account and server start, tell players without a friend tag how
+#                     to pick one, a few seconds after they log in.
+#        Default:     1 - (On)
+#                     0 - (Off)
+
+AccountFriends.TagHint = 1
