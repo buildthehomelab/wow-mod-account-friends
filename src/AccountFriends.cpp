@@ -37,6 +37,7 @@
 #include "DBCStores.h"
 #include "DatabaseEnv.h"
 #include "GameTime.h"
+#include "GuildMgr.h"
 #include "Hyperlinks.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
@@ -619,7 +620,8 @@ namespace AccountFriends
             toon.race = player->getRace();
             toon.team = player->GetTeamId() == TEAM_HORDE ? 1 : 0;
             toon.zone = player->GetZoneId();
-            toon.guild = player->GetGuildName();
+            // Not Player::GetGuildName(): it follows a null guild for a character with none.
+            toon.guild = sGuildMgr->GetGuildNameById(player->GetGuildId());
             toon.afk = player->isAFK();
             toon.dnd = player->isDND();
             return toon;
