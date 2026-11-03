@@ -18,6 +18,12 @@ function Frame:SetText(t) self.text = t end
 function Frame:GetText() return self.text or "" end
 function Frame:SetTextColor() end
 function Frame:SetTexture(t) self.texture = t end
+function Frame:SetHeight() end
+function Frame:SetWidth() end
+function Frame:SetPoint() end
+function Frame:SetNormalFontObject() end
+function Frame:SetHighlightFontObject() end
+function Frame:GetTextWidth() return #self:GetText() * 6 end
 function Frame:AddMessage(t) printed[#printed + 1] = t end
 
 local function newFrame(name)
@@ -61,6 +67,10 @@ function GetRealmName() return "Realm" end
 function SetCVar(k, v) _G["cvar_" .. k] = v end
 function StaticPopupSpecial_Hide(f) f.shown = false end
 function AddFriendEntryFrame_Expand() AddFriendFrame.expanded = true end
+local chatBoxOpen, chatBoxText = false, nil
+local chatBox = { Insert = function(_, text) chatBoxText = text end }
+function ChatEdit_GetActiveWindow() return chatBoxOpen and chatBox or nil end
+function ChatFrame_OpenChat(text) chatBoxOpen, chatBoxText = true, text end
 format = string.format
 
 ChatTypeInfo = { SYSTEM = { r = 1, g = 1, b = 0 }, BN_WHISPER = { r = 0, g = 1, b = 1 } }
@@ -78,6 +88,7 @@ UnitPopupMenus = {
 }
 
 DEFAULT_CHAT_FRAME = newFrame("ChatFrame1")
+newFrame("FriendsTabHeader")
 newFrame("FriendsTabHeaderTab3"):Hide()
 newFrame("FriendsFramePendingButton1ReportButton")
 newFrame("FriendsFramePendingButton1BlockButton")
@@ -171,6 +182,26 @@ assert(BATTLENET_NAME_FORMAT == "%1$s%2$s" and BN_INLINE_TOAST_FRIEND_ADDED == "
 assert(cvar_addFriendInfoShown == "1")
 assert(table.concat(UnitPopupMenus.BN_FRIEND, ",") == "WHISPER,POP_OUT_CHAT,BN_INVITE,BN_SET_NOTE,BN_REMOVE_FRIEND,CANCEL")
 assert(table.concat(UnitPopupMenus.BN_FRIEND_OFFLINE, ",") == "BN_SET_NOTE,BN_REMOVE_FRIEND,CANCEL")
+
+-- Your tag on the tab row. With the chat box closed a click opens it; open, it adds to it.
+assert(AccountFriendsTagButton:GetText() == "Me#1111")
+AccountFriendsTagButton:GetScript("OnClick")()
+assert(chatBoxOpen and chatBoxText == "Me#1111")
+chatBoxText = nil
+AccountFriendsTagButton:GetScript("OnClick")()
+assert(chatBoxText == "Me#1111")
+chatBoxOpen, chatBoxText = false, nil
+
+-- Without a tag the button offers to choose one, and follows a change of tag.
+server("S\t0\t\t0\t0\t0\t")
+assert(AccountFriendsTagButton:GetText() == "Pick a friend tag")
+AccountFriendsTagButton:GetScript("OnClick")()
+assert(chatBoxOpen and chatBoxText == ".friends tag ")
+chatBoxOpen, chatBoxText = false, nil
+AddFriendFrame_ShowEntry()
+assert(AddFriendEntryFrameLeftDescription:GetText():find("Pick your own tag first", 1, true))
+server("S\t1\tMe\t1111\t0\t0\t")
+assert(AccountFriendsTagButton:GetText() == "Me#1111")
 
 -- The list: online by name (Anna, Hordey, Pawster), then Zed offline.
 local total, online = BNGetNumFriends()
